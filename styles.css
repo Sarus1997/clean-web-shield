@@ -1,0 +1,129 @@
+/* ==============================================================
+   1. กฎเหล็กดักแบนเนอร์ฝังในเนื้อหา (แบบ REDKONG, LONDON, JUAD, MAMMOTH)
+   ============================================================== */
+a[target="_blank"]>img,
+a[target="_blank"]>picture,
+a[target="_blank"] img[src$=".gif"],
+a[target="_blank"] img[src*=".gif?"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+}
+
+/* ดักโฟลเดอร์ภาพโฆษณาของเว็บดูหนังทุกแห่ง */
+img[src*="/banner/"],
+img[src*="/banners/"],
+img[src*="/ads/"],
+img[src*="/adv/"],
+img[src*="728x90"],
+img[src*="300x250"],
+img[src*="160x600"] {
+  display: none !important;
+}
+
+/* ==============================================================
+   2. กฎดักแบนเนอร์ลอยข้างจอ ซ้าย-ขวา (แบบ 037HD)
+   ============================================================== */
+#banner-left,
+#banner-right,
+#float-left,
+#float-right,
+.float-left,
+.float-right,
+[class*="side-banner"],
+[id*="side-banner"],
+[class*="float_banner"],
+[id*="float_banner"],
+[class*="sticky-banner"],
+[id*="sticky-banner"],
+div[id*="banner_left"],
+div[id*="banner_right"],
+div[style*="position: fixed"][style*="left: 0"],
+div[style*="position: fixed"][style*="left:0"],
+div[style*="position: fixed"][style*="right: 0"],
+div[style*="position: fixed"][style*="right:0"],
+div[style*="position:fixed"][style*="left: 0"],
+div[style*="position:fixed"][style*="right: 0"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ==============================================================
+   3. ดักปุ่มกากบาทสีแดงปลอม (X) และกล่องรวมป้ายขยะ
+   ============================================================== */
+span[style*="background: red"],
+div[style*="background: red"],
+a[style*="background: red"],
+[class*="close-ad"],
+[class*="ad-close"],
+[class*="close-floating"],
+.box-banner,
+.banner-list,
+.all-banners,
+.banners-wrapper,
+#banner_center,
+#banner_footer {
+  display: none !important;
+}
+
+/* ==============================================================
+   4. ดักลิงก์ที่ตั้งใจพาไปหาเว็บพนันและแอปแชท
+   ============================================================== */
+a[href*="ufa"],
+a[href*="nato"],
+a[href*="slot"],
+a[href*="bet"],
+a[href*="ball"],
+a[href*="casino"],
+a[href*="line.me"],
+a[href*="lin.ee"],
+a[href*="t.me/"],
+a[href*="/go/"],
+a[href*="/out/"],
+a[href*="redirect"] {
+  display: none !important;
+}
+
+/* ปลดล็อก Scrollbar ให้เลื่อนอ่านเนื้อหาได้ปกติ */
+html,
+body {
+  overflow: auto !important;
+  position: static !important;
+}
+
+/* ==============================================================
+   สั่งดับไฟโฆษณาวิดีโอทุกค่าย (JWPlayer, VideoJS, VAST, IMA)
+   ============================================================== */
+.jw-ad-ui,
+.jw-ad,
+.jw-flag-ads,
+.vjs-ad-playing,
+.vjs-ad-loading,
+.ima-ad-container,
+[class*="video-ad"],
+[id*="video-ad"],
+[class*="preroll"],
+[id*="preroll"],
+[id*="vast-ad"],
+div[id*="ad_wrapper"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ซ่อนแบนเนอร์ฝังและป้ายลอยทุกชนิดแบบถาวร */
+a[target="_blank"]>img,
+a[target="_blank"]>picture,
+iframe[src*="ad"],
+iframe[src*="banner"],
+iframe[src*="pop"] {
+  display: none !important;
+  visibility: hidden !important;
+}

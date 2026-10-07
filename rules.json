@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "regexFilter": "(cdend\\.com|allmp4\\.pro|streamad|adserver|popads|adsystem)",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "image"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "regexFilter": "(\/google-analytics|\/pagead\/|\/doubleclick|\/googlesyndication|\/vast\/|\/vpaid\/)",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "regexFilter": "(ufa|pgw|slot|casino|bacc|nato|bet[0-9]+|redkong|juad|mammoth)",
+      "resourceTypes": ["image", "script"]
+    }
+  }
+]
