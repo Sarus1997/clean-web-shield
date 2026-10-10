@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clean Web Shield</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icons/icon32.png" alt="">
+      <div>
+        <h1>Clean Web Shield</h1>
+        <p>จัดการการป้องกันเว็บไซต์</p>
+      </div>
+    </header>
+
+    <section class="master-control">
+      <div>
+        <strong>เปิดการป้องกัน</strong>
+        <span id="global-status" class="status"></span>
+      </div>
+      <label class="switch" aria-label="เปิดหรือปิดการป้องกันทุกเว็บไซต์">
+        <input id="global-toggle" type="checkbox">
+        <span class="slider"></span>
+      </label>
+    </section>
+
+    <section class="current-site">
+      <h2>เว็บไซต์นี้</h2>
+      <p id="current-host">กำลังตรวจสอบเว็บไซต์...</p>
+      <button id="site-toggle" type="button" disabled>ปิดการป้องกันเว็บนี้</button>
+    </section>
+
+    <section class="site-manager">
+      <h2>เพิ่มเว็บไซต์ที่ต้องการปิด</h2>
+      <form id="add-site-form">
+        <input id="site-input" type="text" placeholder="เช่น example.com" aria-label="ชื่อโดเมนเว็บไซต์">
+        <button type="submit">เพิ่ม</button>
+      </form>
+      <ul id="site-list"></ul>
+      <p id="empty-list" class="muted">ยังไม่มีเว็บไซต์ที่ปิดไว้</p>
+    </section>
+    <p id="error" class="error" role="alert" hidden></p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

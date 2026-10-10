@@ -10,6 +10,8 @@
     "128": "icons/icon128.png"
   },
   "action": {
+    "default_title": "Clean Web Shield",
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -17,7 +19,10 @@
       "128": "icons/icon128.png"
     }
   },
-  "permissions": ["declarativeNetRequest"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["declarativeNetRequest", "storage"],
   "host_permissions": ["<all_urls>"],
   "declarative_net_request": {
     "rule_resources": [
