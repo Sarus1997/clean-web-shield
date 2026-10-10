@@ -2,11 +2,37 @@
   box-sizing: border-box;
 }
 
+:root {
+  color-scheme: light;
+  --page: #f5f7fa;
+  --surface: #fff;
+  --text: #17212b;
+  --muted: #64748b;
+  --subtle: #475569;
+  --border: #e2e8f0;
+  --input-border: #cbd5e1;
+  --secondary: #e2e8f0;
+  --secondary-text: #334155;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #111827;
+  --surface: #1f2937;
+  --text: #e5e7eb;
+  --muted: #a8b4c5;
+  --subtle: #cbd5e1;
+  --border: #374151;
+  --input-border: #4b5563;
+  --secondary: #374151;
+  --secondary-text: #e5e7eb;
+}
+
 body {
   width: 330px;
   margin: 0;
-  color: #17212b;
-  background: #f5f7fa;
+  color: var(--text);
+  background: var(--page);
   font: 14px/1.45 system-ui, sans-serif;
 }
 
@@ -28,6 +54,10 @@ header {
   margin-bottom: 15px;
 }
 
+header > div {
+  flex: 1;
+}
+
 header img {
   width: 32px;
   height: 32px;
@@ -46,15 +76,15 @@ h1 {
 header p,
 .muted,
 .status {
-  color: #64748b;
+  color: var(--muted);
   font-size: 12px;
 }
 
 section {
   padding: 12px;
   margin-top: 10px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 
@@ -75,7 +105,55 @@ h2 {
 #current-host {
   margin-bottom: 10px;
   overflow-wrap: anywhere;
-  color: #475569;
+  color: var(--subtle);
+}
+
+.theme-toggle,
+.secondary-button {
+  color: var(--secondary-text);
+  background: var(--secondary);
+}
+
+.theme-toggle {
+  flex: none;
+}
+
+.risk-scan {
+  margin-top: 9px;
+}
+
+.secondary-button {
+  width: 100%;
+}
+
+.scan-result {
+  padding: 9px;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+.scan-result ul {
+  padding-left: 18px;
+}
+
+.scan-result small {
+  display: block;
+  margin-top: 7px;
+}
+
+.risk-low {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.risk-medium {
+  color: #854d0e;
+  background: #fef3c7;
+}
+
+.risk-high {
+  color: #991b1b;
+  background: #fee2e2;
 }
 
 button {
@@ -106,7 +184,9 @@ input[type="text"] {
   min-width: 0;
   flex: 1;
   padding: 7px 8px;
-  border: 1px solid #cbd5e1;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
 }
 
@@ -125,8 +205,8 @@ ul {
 
 .site-row button {
   flex: none;
-  color: #334155;
-  background: #e2e8f0;
+  color: var(--secondary-text);
+  background: var(--secondary);
 }
 
 .muted {

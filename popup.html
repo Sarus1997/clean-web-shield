@@ -14,6 +14,7 @@
         <h1>Clean Web Shield</h1>
         <p>จัดการการป้องกันเว็บไซต์</p>
       </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">ธีมมืด</button>
     </header>
 
     <section class="master-control">
@@ -31,6 +32,10 @@
       <h2>เว็บไซต์นี้</h2>
       <p id="current-host">กำลังตรวจสอบเว็บไซต์...</p>
       <button id="site-toggle" type="button" disabled>ปิดการป้องกันเว็บนี้</button>
+      <div class="risk-scan">
+        <button id="scan-button" class="secondary-button" type="button" disabled>สแกนความเสี่ยง</button>
+        <div id="scan-result" class="scan-result" role="status" aria-live="polite" hidden></div>
+      </div>
     </section>
 
     <section class="site-manager">
