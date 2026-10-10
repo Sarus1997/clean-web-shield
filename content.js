@@ -1,6 +1,29 @@
 // content.js - Vanish Edition (หายไปทันที ไม่กวนใจ)
 
 const isYouTube = window.location.hostname.includes('youtube.com');
+let observer = null;
+let controllerTimer = null;
+let active = false;
+const originalVideoState = new Map();
+
+function rememberVideoState(video) {
+  if (!originalVideoState.has(video)) {
+    originalVideoState.set(video, {
+      muted: video.muted,
+      playbackRate: video.playbackRate,
+      opacity: video.style.opacity
+    });
+  }
+}
+
+function restoreVideoState() {
+  for (const [video, state] of originalVideoState) {
+    video.muted = state.muted;
+    video.playbackRate = state.playbackRate;
+    video.style.opacity = state.opacity;
+  }
+  originalVideoState.clear();
+}
 
 // ==============================================================
 // 1. YouTube Module (ทำงานปกติ ปลอดภัยกับคลิปเพลง 100%)
@@ -15,6 +38,7 @@ function handleYouTubeSafely() {
                document.querySelector('.video-ads.ytp-ad-module')?.children.length > 0;
 
   if (isAd) {
+    rememberVideoState(video);
     video.muted = true;
     video.playbackRate = 16.0;
     if (isFinite(video.duration) && video.duration > 0) {
@@ -41,6 +65,7 @@ function vanishPirateAds() {
 
     // ถ้าความยาวคลิปเข้าข่ายโฆษณา (1 ถึง 200 วินาที)
     if (d && !isNaN(d) && isFinite(d) && d > 0 && d <= 200) {
+      rememberVideoState(video);
       // 1. ซ่อนภาพและปิดเสียงทันที (ไม่ให้โผล่มาให้เห็นหรือได้ยิน)
       video.style.opacity = '0';
       video.muted = true;
@@ -52,6 +77,7 @@ function vanishPirateAds() {
       } catch (e) {}
 
     } else if (d > 200) {
+      rememberVideoState(video);
       // เมื่อเข้าเนื้อหาหนังจริง (เกิน 200 วินาที) -> เปิดภาพปกติ คืนค่าความเร็ว
       video.style.opacity = '1';
       if (video.playbackRate !== 1.0) video.playbackRate = 1.0;
@@ -122,9 +148,40 @@ function mainController() {
   }
 }
 
-// ตรวจจับ Real-time ทุก 0.2 วินาที (ไวขึ้นกว่าเดิม 50%)
-setInterval(mainController, 200);
+function startShield() {
+  if (active) return;
+  active = true;
+  document.documentElement.setAttribute('data-clean-web-shield', '');
 
-// ใช้ MutationObserver ช่วยลบทันทีที่โครงสร้างหน้าเว็บเปลี่ยน
-const observer = new MutationObserver(mainController);
-observer.observe(document.documentElement, { childList: true, subtree: true });
+  controllerTimer = setInterval(mainController, 200);
+  observer = new MutationObserver(mainController);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  mainController();
+}
+
+function stopShield() {
+  if (!active) return;
+  active = false;
+  clearInterval(controllerTimer);
+  observer.disconnect();
+  observer = null;
+  controllerTimer = null;
+  document.documentElement.removeAttribute('data-clean-web-shield');
+  restoreVideoState();
+}
+
+function applySiteSettings(settings) {
+  const disabledSites = settings.disabledSites || [];
+  const siteDisabled = disabledSites.some(host =>
+    window.location.hostname === host || window.location.hostname.endsWith(`.${host}`)
+  );
+  if (settings.enabled !== false && !siteDisabled) startShield();
+  else stopShield();
+}
+
+chrome.storage.local.get({ enabled: true, disabledSites: [] }, applySiteSettings);
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && (changes.enabled || changes.disabledSites)) {
+    chrome.storage.local.get({ enabled: true, disabledSites: [] }, applySiteSettings);
+  }
+});
