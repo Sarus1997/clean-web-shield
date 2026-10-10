@@ -3,6 +3,20 @@
   "name": "Clean Web Shield (Precision Edition)",
   "version": "4.0",
   "description": "บล็อกโฆษณาเว็บดูหนังและข้ามโฆษณา YouTube อย่างแม่นยำ ไม่กระทบเนื้อหาหลัก",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "permissions": ["declarativeNetRequest"],
   "host_permissions": ["<all_urls>"],
   "declarative_net_request": {
