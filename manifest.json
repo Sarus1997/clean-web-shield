@@ -1,13 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "Clean Web Shield (Precision Edition)",
-  "version": "4.0",
-  "description": "บล็อกโฆษณาเว็บดูหนังและข้ามโฆษณา YouTube อย่างแม่นยำ ไม่กระทบเนื้อหาหลัก",
+  "name": "Clean Web Shield",
+  "version": "5.0",
+  "description": "Smart Precision Ad Blocker",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "permissions": ["declarativeNetRequest", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
   },
   "action": {
     "default_title": "Clean Web Shield",
@@ -19,11 +24,6 @@
       "128": "icons/icon128.png"
     }
   },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "permissions": ["declarativeNetRequest", "storage"],
-  "host_permissions": ["<all_urls>"],
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -40,12 +40,13 @@
       "js": ["content.js"],
       "run_at": "document_start",
       "all_frames": true
-    }
-  ],
-  "web_accessible_resources": [
+    },
     {
-      "resources": ["inject.js"],
-      "matches": ["<all_urls>"]
+      "matches": ["<all_urls>"],
+      "js": ["inject.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
     }
   ]
 }

@@ -1,54 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
+
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Clean Web Shield</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
-  <main>
-    <header>
-      <img src="icons/icon32.png" alt="">
-      <div>
-        <h1>Clean Web Shield</h1>
-        <p>จัดการการป้องกันเว็บไซต์</p>
+  <main class="app">
+
+    <header class="header">
+      <div class="brand">
+        <div class="logo">
+          <img src="icons/icon.svg" alt="">
+        </div>
+        <div>
+          <h1>CLEAN WEB SHIELD</h1>
+          <span>PRECISION EDITION <b>5.0</b></span>
+        </div>
       </div>
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">ธีมมืด</button>
+      <div class="version">BETA</div>
     </header>
 
-    <section class="master-control">
-      <div>
-        <strong>เปิดการป้องกัน</strong>
-        <span id="global-status" class="status"></span>
+    <section class="hero" id="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow">PROTECTION STATUS</div>
+          <h2 id="statusTitle">กำลังโหลด...</h2>
+          <p id="statusDescription">กำลังตรวจสอบระบบ</p>
+        </div>
+        <div class="shield-icon" id="shieldIcon">
+          <img src="icons/icon.svg" alt="">
+        </div>
       </div>
-      <label class="switch" aria-label="เปิดหรือปิดการป้องกันทุกเว็บไซต์">
-        <input id="global-toggle" type="checkbox">
-        <span class="slider"></span>
-      </label>
+
+      <div class="toggle-row">
+        <div>
+          <strong>ระบบป้องกันทั้งหมด</strong>
+          <span>Global Protection</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="masterToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
     </section>
 
-    <section class="current-site">
-      <h2>เว็บไซต์นี้</h2>
-      <p id="current-host">กำลังตรวจสอบเว็บไซต์...</p>
-      <button id="site-toggle" type="button" disabled>ปิดการป้องกันเว็บนี้</button>
-      <div class="risk-scan">
-        <button id="scan-button" class="secondary-button" type="button" disabled>สแกนความเสี่ยง</button>
-        <div id="scan-result" class="scan-result" role="status" aria-live="polite" hidden></div>
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-icon purple">◈</div>
+        <strong id="siteCount">0</strong>
+        <span>เว็บไซต์ที่ยกเว้น</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">◎</div>
+        <strong id="protectionStatus">--</strong>
+        <span>สถานะระบบ</span>
       </div>
     </section>
 
-    <section class="site-manager">
-      <h2>เพิ่มเว็บไซต์ที่ต้องการปิด</h2>
-      <form id="add-site-form">
-        <input id="site-input" type="text" placeholder="เช่น example.com" aria-label="ชื่อโดเมนเว็บไซต์">
-        <button type="submit">เพิ่ม</button>
+    <section class="sites-section">
+      <div class="section-heading">
+        <div>
+          <h3>เว็บไซต์ที่ต้องการยกเว้น</h3>
+          <p>จัดการเว็บไซต์ที่ไม่ต้องการให้ระบบทำงาน</p>
+        </div>
+        <button class="reset-btn" id="resetBtn" type="button">
+          ↻ Reset
+        </button>
+      </div>
+
+      <form id="siteForm" class="add-form">
+        <div class="input-wrap">
+          <span>⌕</span>
+          <input id="siteInput" type="text" placeholder="example.com" autocomplete="off" spellcheck="false"
+            maxlength="253">
+        </div>
+        <button class="add-btn" type="submit" id="addBtn">
+          +
+        </button>
       </form>
-      <ul id="site-list"></ul>
-      <p id="empty-list" class="muted">ยังไม่มีเว็บไซต์ที่ปิดไว้</p>
+
+      <div class="hint">
+        <span>ⓘ</span>
+        ใส่ชื่อเว็บไซต์ เช่น youtube.com
+      </div>
+
+      <div class="site-list" id="siteList">
+        <div class="empty-state">
+          <div class="empty-icon">◎</div>
+          <strong>ยังไม่มีเว็บไซต์ที่ยกเว้น</strong>
+          <span>เว็บไซต์ที่เพิ่มจะแสดงตรงนี้</span>
+        </div>
+      </div>
     </section>
-    <p id="error" class="error" role="alert" hidden></p>
+
+    <footer>
+      <div class="footer-line"></div>
+      <span>POWERED BY CLEAN WEB SHIELD</span>
+      <span class="footer-version">VERSION 5.0</span>
+    </footer>
+
+    <div class="toast" id="toast"></div>
   </main>
+
   <script src="popup.js"></script>
 </body>
+
 </html>

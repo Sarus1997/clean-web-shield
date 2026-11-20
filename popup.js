@@ -1,208 +1,288 @@
-const globalToggle = document.getElementById("global-toggle");
-const globalStatus = document.getElementById("global-status");
-const currentHostLabel = document.getElementById("current-host");
-const siteToggle = document.getElementById("site-toggle");
-const siteInput = document.getElementById("site-input");
-const siteList = document.getElementById("site-list");
-const emptyList = document.getElementById("empty-list");
-const errorLabel = document.getElementById("error");
-const themeToggle = document.getElementById("theme-toggle");
-const scanButton = document.getElementById("scan-button");
-const scanResult = document.getElementById("scan-result");
 
-let state = { enabled: true, disabledSites: [] };
-let currentHost = null;
-let currentUrl = null;
+"use strict";
 
-function showError(message) {
-  errorLabel.textContent = message;
-  errorLabel.hidden = !message;
+const $ = id => document.getElementById(id);
+
+const elements = {
+  hero: $("hero"),
+  title: $("statusTitle"),
+  description: $("statusDescription"),
+  toggle: $("masterToggle"),
+  siteCount: $("siteCount"),
+  protection: $("protectionStatus"),
+  input: $("siteInput"),
+  form: $("siteForm"),
+  addBtn: $("addBtn"),
+  list: $("siteList"),
+  reset: $("resetBtn"),
+  toast: $("toast")
+};
+
+let currentState = {
+  enabled: true,
+  disabledSites: []
+};
+
+let busy = false;
+let toastTimer;
+
+function showToast(message) {
+  elements.toast.textContent = message;
+  elements.toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    elements.toast.classList.remove("show");
+  }, 2200);
 }
 
-async function send(message) {
-  const response = await chrome.runtime.sendMessage(message);
-  if (!response?.ok) throw new Error(response?.error || "ทำรายการไม่สำเร็จ");
-  state = { ...state, ...response.state };
-  render();
+function normalizeHost(value) {
+  const input = value.trim().replace(/^\*\./, "");
+
+  if (!input) return null;
+
+  try {
+    const url = new URL(
+      input.includes("://") ? input : `https://${input}`
+    );
+
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+
+    if (
+      !host ||
+      !host.includes(".") ||
+      host.includes("*") ||
+      host.length > 253
+    ) {
+      return null;
+    }
+
+    return host;
+  } catch {
+    return null;
+  }
 }
 
-function isSiteDisabled(host) {
-  return state.disabledSites.includes(host);
+function sendMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, response => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+
+      if (!response?.ok) {
+        reject(new Error(response?.error || "เกิดข้อผิดพลาด"));
+        return;
+      }
+
+      resolve(response.state);
+    });
+  });
 }
 
 function render() {
-  document.documentElement.dataset.theme = state.theme === "dark" ? "dark" : "light";
-  themeToggle.textContent = state.theme === "dark" ? "ธีมสว่าง" : "ธีมมืด";
-  themeToggle.setAttribute("aria-pressed", String(state.theme === "dark"));
-  globalToggle.checked = state.enabled;
-  globalStatus.textContent = state.enabled ? "ทำงานอยู่" : "ปิดการป้องกันทุกเว็บไซต์";
+  const enabled = currentState.enabled;
+  const sites = currentState.disabledSites || [];
 
-  if (currentHost) {
-    const disabled = isSiteDisabled(currentHost);
-    currentHostLabel.textContent = currentHost;
-    scanButton.disabled = false;
-    siteToggle.disabled = !state.enabled;
-    siteToggle.textContent = disabled
-      ? "เปิดการป้องกันเว็บนี้"
-      : "ปิดการป้องกันเว็บนี้";
-  } else {
-    currentHostLabel.textContent = "ไม่สามารถใช้กับหน้านี้ได้";
-    siteToggle.disabled = true;
-    scanButton.disabled = true;
-  }
+  elements.toggle.checked = enabled;
+  elements.hero.classList.toggle("disabled", !enabled);
 
-  siteList.replaceChildren();
-  for (const host of state.disabledSites) {
-    const row = document.createElement("li");
-    row.className = "site-row";
-    const label = document.createElement("span");
-    label.textContent = host;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = "เปิด";
-    button.setAttribute("aria-label", `เปิดการป้องกัน ${host}`);
-    button.addEventListener("click", () => runAction(() =>
-      send({ type: "SET_SITE_DISABLED", host, disabled: false })
-    ));
-    row.append(label, button);
-    siteList.append(row);
-  }
-  emptyList.hidden = state.disabledSites.length > 0;
-}
+  elements.title.textContent = enabled
+    ? "ระบบกำลังป้องกัน"
+    : "ระบบปิดการป้องกัน";
 
-function scanCurrentSite() {
-  scanResult.replaceChildren();
-  scanResult.hidden = false;
-  scanResult.className = "scan-result";
+  elements.description.textContent = enabled
+    ? "การป้องกันกำลังทำงานอยู่"
+    : "โฆษณาอาจปรากฏบนเว็บไซต์";
 
-  if (!currentUrl || !currentHost) {
-    scanResult.textContent = "ไม่สามารถสแกนหน้านี้ได้";
-    scanResult.classList.add("risk-medium");
+  elements.protection.textContent = enabled ? "ACTIVE" : "OFF";
+  elements.protection.style.color = enabled ? "#86EFAC" : "#FCA5A5";
+
+  elements.siteCount.textContent = String(sites.length);
+
+  elements.list.replaceChildren();
+
+  if (!sites.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+
+    const icon = document.createElement("div");
+    icon.className = "empty-icon";
+    icon.textContent = "◎";
+
+    const title = document.createElement("strong");
+    title.textContent = "ยังไม่มีเว็บไซต์ที่ยกเว้น";
+
+    const description = document.createElement("span");
+    description.textContent = "เว็บไซต์ที่เพิ่มจะแสดงตรงนี้";
+
+    empty.append(icon, title, description);
+    elements.list.append(empty);
     return;
   }
 
-  let score = 0;
-  const findings = [];
-  const url = new URL(currentUrl);
-  const host = url.hostname.toLowerCase();
+  sites.forEach(host => {
+    const item = document.createElement("div");
+    item.className = "site-item";
 
-  if (url.protocol !== "https:") {
-    score += 2;
-    findings.push("การเชื่อมต่อไม่ใช้ HTTPS");
-  }
-  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) {
-    score += 3;
-    findings.push("เว็บไซต์ใช้หมายเลข IP แทนชื่อโดเมน");
-  }
-  if (host.includes("xn--")) {
-    score += 3;
-    findings.push("ชื่อโดเมนมีอักขระแปลงรูปแบบ (punycode) ซึ่งอาจเลียนแบบโดเมนอื่น");
-  }
-  if (host.split(".").length > 4) {
-    score += 1;
-    findings.push("ชื่อโดเมนมีหลายระดับกว่าปกติ");
-  }
-  if (/(login|signin|verify|account|secure|wallet|password|update|claim|bonus)/i.test(host)) {
-    score += 1;
-    findings.push("ชื่อโดเมนมีคำที่มักใช้ล่อให้เข้าสู่ระบบหรือรับข้อเสนอ");
-  }
-  if (url.username || url.password) {
-    score += 3;
-    findings.push("URL มีข้อมูลชื่อผู้ใช้หรือรหัสผ่านฝังอยู่");
-  }
+    const globe = document.createElement("div");
+    globe.className = "site-globe";
+    globe.textContent = "◎";
 
-  const level = score >= 5 ? "high" : score >= 2 ? "medium" : "low";
-  scanResult.classList.add(`risk-${level}`);
-  const title = document.createElement("strong");
-  title.textContent = level === "high"
-    ? "พบสัญญาณเสี่ยงหลายรายการ"
-    : level === "medium"
-      ? "ควรตรวจสอบเว็บไซต์นี้"
-      : "ไม่พบสัญญาณเสี่ยงจาก URL";
-  scanResult.append(title);
+    const info = document.createElement("div");
+    info.className = "site-info";
 
-  if (findings.length) {
-    const list = document.createElement("ul");
-    for (const finding of findings) {
-      const item = document.createElement("li");
-      item.textContent = finding;
-      list.append(item);
-    }
-    scanResult.append(list);
-  }
+    const name = document.createElement("strong");
+    name.textContent = host;
 
-  const note = document.createElement("small");
-  note.textContent = "ตรวจสอบจาก URL ในเครื่องเท่านั้น ไม่ได้ยืนยันความปลอดภัยของเว็บไซต์";
-  scanResult.append(note);
+    const subtitle = document.createElement("span");
+    subtitle.textContent = "ยกเว้นการป้องกัน";
+
+    info.append(name, subtitle);
+
+    const remove = document.createElement("button");
+    remove.className = "delete-btn";
+    remove.type = "button";
+    remove.textContent = "✕";
+    remove.title = "ลบเว็บไซต์นี้";
+    remove.setAttribute("aria-label", `ลบ ${host}`);
+
+    remove.addEventListener("click", () => removeSite(host));
+
+    item.append(globe, info, remove);
+    elements.list.append(item);
+  });
 }
 
-async function runAction(action) {
-  showError("");
+async function loadState() {
   try {
-    await action();
-  } catch (error) {
+    currentState = await sendMessage({
+      type: "GET_STATE"
+    });
+
     render();
-    showError(error.message);
+  } catch (error) {
+    showToast(error.message);
   }
 }
 
-globalToggle.addEventListener("change", () => runAction(() =>
-  send({ type: "SET_ENABLED", enabled: globalToggle.checked })
-));
-
-siteToggle.addEventListener("click", () => {
-  if (!currentHost) return;
-  runAction(() => send({
-    type: "SET_SITE_DISABLED",
-    host: currentHost,
-    disabled: !isSiteDisabled(currentHost)
-  }));
-});
-
-document.getElementById("add-site-form").addEventListener("submit", event => {
+async function addSite(event) {
   event.preventDefault();
-  runAction(async () => {
-    await send({
+
+  if (busy) return;
+
+  const host = normalizeHost(elements.input.value);
+
+  if (!host) {
+    showToast("กรุณากรอกชื่อเว็บไซต์ให้ถูกต้อง");
+    return;
+  }
+
+  if (currentState.disabledSites.includes(host)) {
+    showToast("เว็บไซต์นี้อยู่ในรายการแล้ว");
+    return;
+  }
+
+  busy = true;
+  elements.addBtn.disabled = true;
+
+  try {
+    currentState = await sendMessage({
       type: "SET_SITE_DISABLED",
-      host: siteInput.value,
+      host,
       disabled: true
     });
-    siteInput.value = "";
-  });
-});
 
-themeToggle.addEventListener("click", () => runAction(async () => {
-  state.theme = state.theme === "dark" ? "light" : "dark";
-  await chrome.storage.local.set({ theme: state.theme });
-  render();
-}));
-
-scanButton.addEventListener("click", scanCurrentSite);
-
-async function initialize() {
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url) {
-      try {
-        currentUrl = tab.url;
-        const url = new URL(tab.url);
-        if (url.protocol === "http:" || url.protocol === "https:") {
-          currentHost = url.hostname.toLowerCase();
-        }
-      } catch {
-        currentHost = null;
-      }
-    }
-    const [response, preferences] = await Promise.all([
-      chrome.runtime.sendMessage({ type: "GET_STATE" }),
-      chrome.storage.local.get({ theme: "light" })
-    ]);
-    if (!response?.ok) throw new Error(response?.error || "โหลดการตั้งค่าไม่สำเร็จ");
-    state = { ...response.state, theme: preferences.theme };
+    elements.input.value = "";
     render();
+    showToast("เพิ่มเว็บไซต์เรียบร้อยแล้ว");
   } catch (error) {
-    showError(error.message);
+    showToast(error.message);
+  } finally {
+    busy = false;
+    elements.addBtn.disabled = false;
   }
 }
 
-initialize();
+async function removeSite(host) {
+  if (busy) return;
+
+  busy = true;
+
+  try {
+    currentState = await sendMessage({
+      type: "SET_SITE_DISABLED",
+      host,
+      disabled: false
+    });
+
+    render();
+    showToast("ลบเว็บไซต์เรียบร้อยแล้ว");
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    busy = false;
+  }
+}
+
+async function resetSites() {
+  if (busy || !currentState.disabledSites.length) {
+    showToast("ไม่มีเว็บไซต์ที่ต้องล้าง");
+    return;
+  }
+
+  if (!confirm("ต้องการล้างรายการเว็บไซต์ที่ยกเว้นทั้งหมดหรือไม่?")) {
+    return;
+  }
+
+  busy = true;
+  elements.reset.disabled = true;
+
+  try {
+    currentState = await sendMessage({
+      type: "RESET_SITES"
+    });
+
+    render();
+    showToast("ล้างรายการเว็บไซต์ทั้งหมดแล้ว");
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    busy = false;
+    elements.reset.disabled = false;
+  }
+}
+
+async function toggleProtection() {
+  if (busy) return;
+
+  const enabled = elements.toggle.checked;
+  busy = true;
+
+  try {
+    currentState = await sendMessage({
+      type: "SET_ENABLED",
+      enabled
+    });
+
+    render();
+    showToast(enabled
+      ? "เปิดระบบป้องกันแล้ว"
+      : "ปิดระบบป้องกันแล้ว"
+    );
+  } catch (error) {
+    elements.toggle.checked = currentState.enabled;
+    showToast(error.message);
+  } finally {
+    busy = false;
+  }
+}
+
+elements.form.addEventListener("submit", addSite);
+elements.reset.addEventListener("click", resetSites);
+elements.toggle.addEventListener("change", toggleProtection);
+
+loadState();
