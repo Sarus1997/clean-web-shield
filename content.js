@@ -33,16 +33,16 @@ function handleYouTubeSafely() {
   const video = document.querySelector('video');
   if (!player || !video) return;
 
-  const isAd = player.classList.contains('ad-showing') || 
-               player.classList.contains('ad-interrupting') ||
-               document.querySelector('.video-ads.ytp-ad-module')?.children.length > 0;
+  const isAd = player.classList.contains('ad-showing') ||
+    player.classList.contains('ad-interrupting') ||
+    document.querySelector('.video-ads.ytp-ad-module')?.children.length > 0;
 
   if (isAd) {
     rememberVideoState(video);
     video.muted = true;
     video.playbackRate = 16.0;
     if (isFinite(video.duration) && video.duration > 0) {
-      try { video.currentTime = video.duration - 0.1; } catch (e) {}
+      try { video.currentTime = video.duration - 0.1; } catch (e) { }
     }
     const skipBtn = document.querySelector('.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button');
     if (skipBtn) skipBtn.click();
@@ -72,9 +72,9 @@ function vanishPirateAds() {
       video.playbackRate = 16.0;
 
       // 2. วาร์ปไปที่วินาทีสุดท้าย บังคับให้ตัดจบ 0 วิ
-      try { 
-        video.currentTime = d; 
-      } catch (e) {}
+      try {
+        video.currentTime = d;
+      } catch (e) { }
 
     } else if (d > 200) {
       rememberVideoState(video);
@@ -184,4 +184,22 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && (changes.enabled || changes.disabledSites)) {
     chrome.storage.local.get({ enabled: true, disabledSites: [] }, applySiteSettings);
   }
+});
+
+function scanPageSecurity() {
+  const secureTransport = window.location.protocol === 'https:';
+  const insecureForms = [...document.forms]
+    .filter(form => form.action.toLowerCase().startsWith('http://')).length;
+  const mixedContentResources = secureTransport
+    ? performance.getEntriesByType('resource')
+      .filter(resource => resource.name.toLowerCase().startsWith('http://')).length
+    : 0;
+
+  return { secureTransport, insecureForms, mixedContentResources };
+}
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type !== 'SCAN_PAGE_SECURITY') return false;
+  sendResponse({ ok: true, result: scanPageSecurity() });
+  return false;
 });
